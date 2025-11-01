@@ -1,75 +1,130 @@
 # A-Multilingual-Multimodal-AI-Teaching-Assistant-
-A Multilingual Multimodal AI Teaching Assistant with Adaptive Explanation and User-Controlled Dialogue Flow 
 
-This repository contains the source code for a Python-based AI Tutoring Agent designed for a Google Colab environment. The primary function of this agent is to facilitate an interactive learning session through a bimodal interface: first, a text-based explanation is provided, which can be followed by a real-time, voice-driven conversational dialogue.
+This project is an intelligent tutoring assistant we built that is both multimodal and multilingual, powered by Google's Gemini LLM. The whole idea was to move past the limits of traditional, passive chatbots and create a learning experience that feels genuinely interactive and adaptive. We developed the entire system to run within a Google Colab notebook.
 
-Technical Features
-Asynchronous Dialogue System: The agent utilizes a multithreaded architecture to handle simultaneous speaking and listening operations. This allows for a "barge-in" capability, where the user can interrupt the agent's speech synthesis process, simulating a natural conversational turn-taking.
+Core Features
+Two-Stage Learning Flow: We designed a unique "Read then Discuss" model. First, a user gets a detailed text-based explanation, which lets them absorb the information at their own speed. After that, they can choose to opt-in to an interactive "Discuss Mode" to explore the topic more deeply.
 
-Bimodal Learning Flow: The system implements a two-stage interaction model. Stage one involves static text display for initial comprehension. Stage two is a dynamic, user-initiated voice session for interactive Q&A, thus decoupling information reception from active discussion.
+Engineered Teacher Persona: We used Few-Shot Prompting to give the AI a specific personality. It's designed to be a friendly, patient, and encouraging "teacher." This persona is prompted to explain complex topics step-by-step, use real-life analogies, and add "Fun Facts" to keep the learning process engaging.
 
-Persona-Driven NLP Core: The agent's conversational logic is powered by the Google Gemini Pro LLM. We employ few-shot prompting techniques to constrain the model's output, forcing it to adopt a consistent "teacher" persona for generating context-aware and pedagogically effective responses.
+Natural Conversation (Barge-In): The user can interrupt the AI at any time while it's speaking by simply saying "stop" or "ruko." We achieved this using Python's threading library, which creates a much more natural and human-like conversational dynamic.
 
-Robust Command Parsing: To handle multilingual commands (Hinglish/English), a fuzzy string matching algorithm (thefuzz library's partial_ratio) is implemented. This allows for reliable intent recognition even with significant phonetic variations or speech-to-text transcription errors.
+Multimodal Input: When in "Discuss Mode," the user isn't limited to typing. They have the choice to either type their query or speak it, which makes the platform more accessible and flexible.
 
-Resilient Input Fallback: A stateful counter monitors speech-to-text failures. If transcription fails for two consecutive attempts, the system's main loop automatically transitions the input modality from voice to text, preventing conversational dead-ends.
+Dynamic Diagram Generation: The tutor can also generate and display colorful flowcharts and diagrams on-the-fly. We use Mermaid.js for this, allowing it to visually explain complex concepts, like the water cycle, for instance.
+
+How It Works
+Here's a breakdown of the process:
+
+Stage 1: Read Mode The user starts by entering a topic. The Gemini model, guided by a "Master Prompt" we wrote, generates a high-quality, text-only explanation.
+
+Stage 2: The Choice After reading, the user is simply asked if they would like to "DISCUSS" the topic.
+
+Stage 3: Discuss Mode If the user agrees, the fully interactive session kicks off.
+
+A Listener Thread starts running continuously in the background. Its only job is to listen for "stop" commands.
+A Main Thread handles the actual conversation. It gets the user's input (either from voice or text), fetches a response from Gemini, and then speaks that response back sentence-by-sentence.
+The crucial part is that before speaking each new sentence, the main thread checks for the "stop signal" from the listener thread. This "barge-in" capability is what allows the user to take control of the conversation at any moment.
 
 Technology Stack
-Language: Python 3
+LLM: Google Gemini (using the google-generativeai library)
+Speech-to-Text: SpeechRecognition
+Text-to-Speech: gTTS
+Concurrency: Python's threading library
+Diagrams: Mermaid.js (which we render in Colab using HTML/JS)
+Environment: Google Colab
+This project essentially demonstrates how you can build a very sophisticated, state-of-the-art conversational AI with advanced features, all just by using publicly available tools.
 
-AI Core: Google Gemini API (gemini-2.5-pro)
 
-Execution Environment: Google Colab
+Project Implementation Plan: A Cell-by-Cell Breakdown
 
-Concurrency: Python threading and queue modules for managing parallel tasks.
+This document outlines the step-by-step implementation of the Conversational Tutoring Agent, with each logical component organized into its own Google Colab cell. This modular approach allows for independent development, testing, and easy modification.
 
-Speech Synthesis (TTS): gTTS library.
+Cell 1: Setup & Installation
 
-Speech Recognition (STT): SpeechRecognition library.
+Purpose: To install all necessary third-party Python libraries required for the project.
+Actions: This cell will execute shell commands to install:
+!pip install google-generativeai: For interacting with the Google Gemini API.
+!pip install gTTS: (Google Text-to-Speech) For converting the AI's text responses into audible speech.
+!pip install SpeechRecognition: For transcribing the user's spoken voice into text.
+!pip install pydub: An audio manipulation library, often required as a dependency for speech recognition tasks.
 
-Audio Processing: pydub and PyAudio for handling audio streams and playback.
+Cell 2: Import Libraries & API Key Setup
 
-String Comparison: thefuzz for Levenshtein distance-based similarity checks.
+Purpose: To import the installed libraries into our script and securely configure the Gemini API.
 
-System Setup and Execution
-1. Prerequisite Configuration
-A valid Google Account.
+Actions:
+Import all required modules (e.g., google.generativeai as genai, speech_recognition as sr, gTTS, threading).
+Access the GOOGLE_API_KEY securely from the Colab 'Secrets' manager.
+Configure the genai module with the API key to authenticate our requests.
 
-A web browser with necessary permissions for microphone access.
+Cell 3: The "Brain" - Master Prompt & Persona
 
-2. API Key Configuration
-The Gemini API key must be configured as a secret within the Colab environment to avoid hardcoding.
+Purpose: To define the core logic of our AI tutor, engineering its "teacher" persona.
 
-Navigate to the Secrets tab in the Colab UI.
+Function: get_explanation(topic_query, conversation_history)
+This function will contain our "Master Prompt" based on the Few-Shot Prompting technique.
+The prompt will instruct the LLM to:
+Adopt a Persona: "You are 'EduPal,' a friendly, patient, and encouraging AI tutor..."
+Follow Rules: "Explain topics step-by-step," "Use simple analogies," "Add one 'Fun Fact!' to keep it engaging..."
+Learn from Examples: Provide 1-2 examples of a good teacher-like response vs. a generic bot response.
+It will take the user's query and the chat history as input and return a high-quality, persona-driven text response from the Gemini model.
 
-Define a new secret with the name GOOGLE_API_KEY.
+Cell 4: The "Senses" - Audio & Text I/O Tools
 
-Insert your API key into the 'Value' field.
+Purpose: To create all the necessary helper functions for handling user input and AI output.
 
-Activate the 'Notebook access' toggle for this secret.
+Functions:
 
-3. Dependency Installation
-Execute the following shell command in a notebook cell to install all system-level and Python dependencies.
+speak(text): A simple, non-interruptible function that takes text, uses gTTS to create an audio file, and plays it in the Colab output.
+listen(): Uses the SpeechRecognition library to capture audio from the user's microphone and return the transcribed text. Includes error handling (e.g., "Sorry, I didn't catch that.").
+get_user_input(): This is our multimodal input function. It will prompt the user (e.g., "Type your query, or press Enter to speak..."). If the user types, it returns the text. If they press Enter, it calls the listen() function.
 
-Bash
+Cell 5: Advanced Feature - The "STOP" Mechanism (Modular Cell)
 
-!apt-get -qq install -y ffmpeg portaudio19-dev && pip install -q google-generativeai gTTS pydub SpeechRecognition thefuzz PyAudio
-Usage Protocol
-Post-installation, execute the main Python script cell.
+Purpose: To implement the complex "barge-in" (interrupt) logic in a single, isolated cell.
+Components: This cell uses the threading library.
+stop_speaking_signal: A global threading.Event() object is created to act as a signal between threads.
+listener_worker(): This function runs on a separate background thread. Its only job is to continuously listen. If it detects a "stop" or "ruko" command, it sets the stop_speaking_signal.
+speak_interruptible(text): A new speak function. It splits the AI's response into sentences. Before speaking each sentence, it checks if stop_speaking_signal.is_set(). If it is, the function stops speaking immediately.
 
-The program will solicit a topic via a text prompt.
+Cell 6: Bonus Feature - Diagram Generator
 
-After rendering the text-based explanation, the system will prompt the user to initiate the voice session (yes/no).
+Purpose: To dynamically generate and display diagrams for the user.
+Function: generate_diagram(topic_for_diagram)
+This function will prompt the Gemini model with a specific request (e.g., "Generate the Mermaid code for a fun and colourful flowchart of the {topic}...").
+It will then take the text-based Mermaid code returned by Gemini.
+Using HTML and JavaScript (executed within the Colab output), it will render that code into a beautiful, visual diagram for the user to see.
 
-On confirmation, grant the browser's request for microphone permissions.
+Cell 7: The Main Program Flow (Part 1 - Text Mode)
 
-The interactive session will commence, guided by audio and text prompts.
+Purpose: To define the main application logic, starting with the text-only stage.
+Function: main_session() (Part 1)
+Welcomes the user.
+Prompts the user for their initial topic using input().
+Stage 1: Calls get_explanation() (from Cell 3) to get the detailed text response.
+Prints the formatted text explanation to the screen.
+Stage 2: Asks the user, "Would you like to DISCUSS this topic? (Type 'DISCUSS' to start voice chat)."
 
-System Architecture
-To ensure stability in the Colab environment, the interactive session is architected using a Producer-Consumer design pattern. This is necessary to decouple the UI-blocking operation (audio recording) from the background processing tasks.
+Cell 8: The Main Program Flow (Part 2 - Discuss Mode)
 
-The Main Thread acts as the Producer. Its sole responsibility is to interface with the Colab frontend, execute the JavaScript-based audio recorder, and place the resulting audio data chunks into a shared queue.Queue object.
+Purpose: To complete the main_session() function by adding the interactive "Discuss Mode."
+Logic: main_session() (Part 2)
+Checks if the user's input is "DISCUSS".
+If yes, it:
+Starts the listener_worker() (from Cell 5) in the background.
+Initializes an empty conversation_history list.
+Enters a while True loop for the conversation.
+Inside the loop:
+Calls get_user_input() (from Cell 4) to get the user's query (voice or text).
+Checks for a "quit" command to break the loop.
+Clears the stop_speaking_signal before getting a new response.
+Calls get_explanation() (from Cell 3), passing the new query and the history.
+Calls speak_interruptible() (from Cell 5) to speak the AI's response.
+When the loop breaks, it signals the listener_worker to stop.
 
-The Listener Thread acts as the Consumer. It runs asynchronously, continuously polling the queue for new audio data. Upon receiving data, it performs the STT and command parsing operations.
+Cell 9: Start the Project!
 
-This architecture prevents race conditions and deadlocks that would otherwise occur if a background thread attempted to directly manipulate the Colab frontend's JavaScript context.
+Purpose: To run the entire application.
+Action: This cell contains the single line of code that executes the main function:
+main_session()
