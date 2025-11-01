@@ -29,6 +29,7 @@ A Main Thread handles the actual conversation. It gets the user's input (either 
 The crucial part is that before speaking each new sentence, the main thread checks for the "stop signal" from the listener thread. This "barge-in" capability is what allows the user to take control of the conversation at any moment.
 
 Technology Stack
+
 LLM: Google Gemini (using the google-generativeai library)
 
 Speech-to-Text: SpeechRecognition
