@@ -1,44 +1,91 @@
-# A-Multilingual-Multimodal-AI-Teaching-Assistant-
+# EduPal:-Multilingual-Multimodal-AI-Teaching-Assistant
 
-This project is an intelligent tutoring assistant we built that is both multimodal and multilingual, powered by Google's Gemini LLM. The whole idea was to move past the limits of traditional, passive chatbots and create a learning experience that feels genuinely interactive and adaptive. We developed the entire system to run within a Google Colab notebook.
+EduPal is an interactive, voice-enabled AI teaching assistant designed to make learning fun and accessible. Unlike standard chatbots, EduPal acts as a friendly tutor that explains complex concepts using analogies, generates visual diagrams, and communicates via voice (Speech-to-Text & Text-to-Speech).
 
-Core Features
-Two-Stage Learning Flow: We designed a unique "Read then Discuss" model. First, a user gets a detailed text-based explanation, which lets them absorb the information at their own speed. After that, they can choose to opt-in to an interactive "Discuss Mode" to explore the topic more deeply.
+Powered by Google Gemini API, EduPal supports multimodal interaction—you can type, speak, or ask for visual flowcharts.
 
-Engineered Teacher Persona: We used Few-Shot Prompting to give the AI a specific personality. It's designed to be a friendly, patient, and encouraging "teacher." This persona is prompted to explain complex topics step-by-step, use real-life analogies, and add "Fun Facts" to keep the learning process engaging.
+##Key Features
 
-Natural Conversation (Barge-In): The user can interrupt the AI at any time while it's speaking by simply saying "stop" or "ruko." We achieved this using Python's threading library, which creates a much more natural and human-like conversational dynamic.
+Voice Interaction:
 
-Multimodal Input: When in "Discuss Mode," the user isn't limited to typing. They have the choice to either type their query or speak it, which makes the platform more accessible and flexible.
+Speak to AI: Uses SpeechRecognition to listen to your queries via microphone.
 
-Dynamic Diagram Generation: The tutor can also generate and display colorful flowcharts and diagrams on-the-fly. We use Mermaid.js for this, allowing it to visually explain complex concepts, like the water cycle, for instance.
+AI Speaks Back: Uses gTTS (Google Text-to-Speech) to explain topics verbally.
 
-How It Works
-Here's a breakdown of the process:
+Visual Learning (Diagram Generator):
 
-Stage 1: Read Mode The user starts by entering a topic. The Gemini model, guided by a "Master Prompt" we wrote, generates a high-quality, text-only explanation.
+Automatically generates Mermaid.js flowcharts for topics like "Human Heart" or "Water Cycle".
 
-Stage 2: The Choice After reading, the user is simply asked if they would like to "DISCUSS" the topic.
+Renders diagrams directly within the notebook using HTML/JavaScript.
 
-Stage 3: Discuss Mode If the user agrees, the fully interactive session kicks off.
+Smart Persona:
 
-A Listener Thread starts running continuously in the background. Its only job is to listen for "stop" commands.
+Acts as a friendly teacher who uses real-world analogies and "Fun Facts" to explain concepts.
 
-A Main Thread handles the actual conversation. It gets the user's input (either from voice or text), fetches a response from Gemini, and then speaks that response back sentence-by-sentence.
+Maintains conversation history (Memory) to have a continuous discussion.
 
-The crucial part is that before speaking each new sentence, the main thread checks for the "stop signal" from the listener thread. This "barge-in" capability is what allows the user to take control of the conversation at any moment.
+Interruptible Speech:
 
-Technology Stack
+Includes a "STOP" button feature allowing users to interrupt the AI while it is speaking, mimicking a real conversation flow.
 
-LLM: Google Gemini (using the google-generativeai library)
+Multilingual Capabilities:
 
-Speech-to-Text: SpeechRecognition
+Capable of understanding and responding in English and Hinglish (Hindi + English mix).
 
-Text-to-Speech: gTTS
+##Tech Stack
+Core AI: Google Gemini API (gemini-1.5-flash recommended for stability).
 
-Concurrency: Python's threading library
+Language: Python.
 
-Diagrams: Mermaid.js (which we render in Colab using HTML/JS)
+Audio Processing:
+
+gTTS (Text-to-Speech).
+
+SpeechRecognition (Speech-to-Text).
+
+pydub (Audio manipulation).
+
+Visualization: Mermaid.js (via IPython HTML display).
+
+Environment: Google Colab (optimized for browser-based audio recording).
+
+Installation & Setup
+Clone the Repository:
+
+Bash
+git clone https://github.com/your-username/EduPal-AI-Tutor.git
+cd EduPal-AI-Tutor
+
+Install Dependencies: This project requires specific libraries. Run the following in your environment:
+
+!pip install -q google-generativeai gTTS SpeechRecognition pydub
+
+API Key Configuration:
+
+Get your free API Key from Google AI Studio.
+
+If using Google Colab, add your key to the "Secrets" tab with the name GOOGLE_API_KEY.
+
+##How to Use
+Start the Session: Run the main_session() function.
+
+Choose a Topic:
+
+Type a topic name (e.g., "Black Holes").
+
+For Diagrams: Type "diagram of [topic]" (e.g., "diagram of photosynthesis") to get a visual flowchart.
+
+Discuss Mode:
+
+After the initial explanation, type DISCUSS to enter interactive mode.
+
+You can now speak your questions or type them.
+
+Press the STOP SPEAKING button if you want to cut the explanation short.
+
+Note on Rate Limits
+If you encounter a 429 Resource Exhausted error, please switch the model in the code from gemini-2.5-flash-preview to gemini-1.5-flash in the setup cell.
+
 
 
 
